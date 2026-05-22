@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Path Analysis & Sobel - Kustomisasi Variabel</title>
+    <title>Aplikasi Path Analysis & Sobel - Full/Partial Mediation</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #2c3e50; line-height: 1.6; padding: 20px; }
         .container { max-width: 950px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
@@ -22,6 +22,7 @@
         .hasil-box { background: #fff; padding: 25px; border: 1px solid #e1e8ed; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .hasil-box p { text-align: justify; margin-bottom: 15px; }
         .highlight { background-color: #e8f8f5; padding: 10px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 15px; border-left: 4px solid #1abc9c; margin-bottom: 15px; }
+        .mediation-box { background-color: #ebf5fb; padding: 10px 15px; border-left: 4px solid #3498db; margin-top: 10px; border-radius: 0 4px 4px 0; }
         hr { border: 0; height: 1px; background: #ecf0f1; margin: 20px 0; }
     </style>
 </head>
@@ -29,7 +30,7 @@
 
 <div class="container">
     <h1>Kalkulator Interpretasi Analisis Jalur Otomatis</h1>
-    <p>Masukkan identitas variabel dan angka hasil output statistik Anda. Teks interpretasi akan disesuaikan secara otomatis dengan nama variabel penelitian Anda.</p>
+    <p>Masukkan identitas variabel dan angka hasil output statistik Anda. Teks interpretasi akan mendeteksi Mediasi Penuh (Full) atau Parsial (Partial) secara otomatis.</p>
 
     <!-- BAGIAN IDENTITAS VARIABEL -->
     <div class="section-identity">
@@ -101,10 +102,10 @@
         </div>
     </div>
 
-    <button onclick="buatInterpretasi()">Hasilkan Narasi Bab IV</button>
+    <button onclick="buatInterpretasi()">INTERPRETASI</button>
 
     <div id="hasil-container">
-        <h2>Hasil Interpretasi Akademis (Siap Salin)</h2>
+        <h2>INTERPRETASI</h2>
         <div id="teks-hasil" class="hasil-box"></div>
     </div>
 </div>
@@ -213,12 +214,24 @@
         html += "<h3>C. Analisis Pengaruh Mediasi (Uji Sobel)</h3>";
         html += `<p>Guna memastikan signifikansi peran variabel ${nz} sebagai mediator yang menjembatani hubungan antara variabel independen ke dependen, dilakukan Uji Sobel untuk mengukur besaran *Standard Error* tidak langsung.</p>`;
 
-        // Jalur 1 (X1 -> Z -> Y)
+        // === JALUR 1 (X1 -> Z -> Y) ===
         let mediasi1 = (a1 * b).toFixed(4);
         let total1 = (bX1Y + (a1 * b)).toFixed(4);
         let sobel1_bawah = Math.sqrt((b*b * sa1*sa1) + (a1*a1 * sb*sb));
         let t_sobel1 = (a1 * b) / sobel1_bawah;
         let ketSobel1 = Math.abs(t_sobel1) > 1.96 ? "berperan secara signifikan sebagai mediator (memediasi)" : "TIDAK mampu memediasi secara signifikan";
+
+        // Logika Full/Partial X1
+        let sifatMediasi1 = "";
+        if (Math.abs(t_sobel1) > 1.96) {
+            if (sigX1Y > 0.05) {
+                sifatMediasi1 = `<b>Mediasi Penuh (Full Mediation)</b>. Karena Pengaruh Langsung ${nx1} terhadap ${ny} tidak signifikan (Sig. ${sigX1Y} > 0,05), hal ini mengindikasikan bahwa variabel ${nx1} MUTLAK membutuhkan variabel ${nz} untuk dapat memengaruhi variabel ${ny}.`;
+            } else {
+                sifatMediasi1 = `<b>Mediasi Parsial (Partial Mediation)</b>. Karena Pengaruh Langsung ${nx1} terhadap ${ny} juga tetap signifikan (Sig. ${sigX1Y} < 0,05), hal ini mengindikasikan bahwa variabel ${nx1} dapat memengaruhi ${ny} secara langsung, maupun memengaruhinya secara tidak langsung melalui ${nz}.`;
+            }
+        } else {
+            sifatMediasi1 = `<b>Tidak Ada Mediasi (No Mediation)</b>. Variabel intervening gagal menjembatani efek secara signifikan.`;
+        }
 
         html += `<h4>1. Pengujian Mediasi: ${nx1} &rarr; ${nz} &rarr; ${ny}</h4>`;
         html += `<ul>
@@ -227,21 +240,35 @@
             <li>Total Pengaruh = <b>${total1}</b></li>
         </ul>`;
         html += `<p>Berdasarkan perhitungan Uji Sobel, diperoleh <b>nilai t hitung sebesar ${Math.abs(t_sobel1).toFixed(3)}</b>. Karena nilai t hitung ${Math.abs(t_sobel1).toFixed(3)} ${Math.abs(t_sobel1) > 1.96 ? '>' : '<'} t tabel (1,96), maka dapat disimpulkan bahwa variabel ${nz} <b>${ketSobel1}</b> pengaruh antara variabel ${nx1} terhadap variabel ${ny}.</p>`;
+        html += `<div class="mediation-box"><b>Sifat Mediasi:</b> ${sifatMediasi1}</div>`;
 
-        // Jalur 2 (X2 -> Z -> Y)
+        // === JALUR 2 (X2 -> Z -> Y) ===
         let mediasi2 = (a2 * b).toFixed(4);
         let total2 = (bX2Y + (a2 * b)).toFixed(4);
         let sobel2_bawah = Math.sqrt((b*b * sa2*sa2) + (a2*a2 * sb*sb));
         let t_sobel2 = (a2 * b) / sobel2_bawah;
         let ketSobel2 = Math.abs(t_sobel2) > 1.96 ? "berperan secara signifikan sebagai mediator (memediasi)" : "TIDAK mampu memediasi secara signifikan";
 
-        html += `<h4>2. Pengujian Mediasi: ${nx2} &rarr; ${nz} &rarr; ${ny}</h4>`;
+        // Logika Full/Partial X2
+        let sifatMediasi2 = "";
+        if (Math.abs(t_sobel2) > 1.96) {
+            if (sigX2Y > 0.05) {
+                sifatMediasi2 = `<b>Mediasi Penuh (Full Mediation)</b>. Karena Pengaruh Langsung ${nx2} terhadap ${ny} tidak signifikan (Sig. ${sigX2Y} > 0,05), hal ini mengindikasikan bahwa variabel ${nx2} MUTLAK membutuhkan variabel ${nz} untuk dapat memengaruhi variabel ${ny}.`;
+            } else {
+                sifatMediasi2 = `<b>Mediasi Parsial (Partial Mediation)</b>. Karena Pengaruh Langsung ${nx2} terhadap ${ny} juga tetap signifikan (Sig. ${sigX2Y} < 0,05), hal ini mengindikasikan bahwa variabel ${nx2} dapat memengaruhi ${ny} secara langsung, maupun memengaruhinya secara tidak langsung melalui ${nz}.`;
+            }
+        } else {
+            sifatMediasi2 = `<b>Tidak Ada Mediasi (No Mediation)</b>. Variabel intervening gagal menjembatani efek secara signifikan.`;
+        }
+
+        html += `<h4 style="margin-top: 25px;">2. Pengujian Mediasi: ${nx2} &rarr; ${nz} &rarr; ${ny}</h4>`;
         html += `<ul>
             <li>Pengaruh langsung ${nx2} &rarr; ${ny} = <b>${bX2Y}</b></li>
             <li>Pengaruh tidak langsung (${nx2} &rarr; ${nz}) &times; (${nz} &rarr; ${ny}) = ${a2} &times; ${b} = <b>${mediasi2}</b></li>
             <li>Total Pengaruh = <b>${total2}</b></li>
         </ul>`;
         html += `<p>Berdasarkan perhitungan Uji Sobel, diperoleh <b>nilai t hitung sebesar ${Math.abs(t_sobel2).toFixed(3)}</b>. Karena nilai t hitung ${Math.abs(t_sobel2).toFixed(3)} ${Math.abs(t_sobel2) > 1.96 ? '>' : '<'} t tabel (1,96), maka dapat disimpulkan bahwa variabel ${nz} <b>${ketSobel2}</b> pengaruh antara variabel ${nx2} terhadap variabel ${ny}.</p>`;
+        html += `<div class="mediation-box"><b>Sifat Mediasi:</b> ${sifatMediasi2}</div>`;
 
         document.getElementById('teks-hasil').innerHTML = html;
         document.getElementById('hasil-container').style.display = 'block';
