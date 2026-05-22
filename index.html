@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Path Analysis & Sobel - Kustomisasi Variabel</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; color: #2c3e50; line-height: 1.6; padding: 20px; }
+        .container { max-width: 950px; margin: auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1, h2, h3, h4 { color: #1a252f; margin-bottom: 10px; }
+        .section-identity { background: #fff8e1; padding: 20px; margin-bottom: 20px; border: 1px solid #f1c40f; border-left: 5px solid #f39c12; border-radius: 4px; }
+        .section-1 { background: #fdfefe; padding: 20px; margin-bottom: 20px; border: 1px solid #d0d3d4; border-left: 5px solid #2980b9; border-radius: 4px; }
+        .section-2 { background: #fdfefe; padding: 20px; margin-bottom: 20px; border: 1px solid #d0d3d4; border-left: 5px solid #8e44ad; border-radius: 4px; }
+        label { display: block; font-weight: 600; margin-top: 12px; font-size: 14px; color: #34495e; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #bdc3c7; border-radius: 4px; box-sizing: border-box; background-color: #f8f9f9; }
+        input[type="number"]:focus, input[type="text"]:focus { outline: none; border-color: #2980b9; background-color: #fff; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
+        button { display: block; width: 100%; padding: 15px; background: #27ae60; color: #fff; border: none; font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 25px; transition: 0.3s; }
+        button:hover { background: #2ecc71; }
+        #hasil-container { display: none; margin-top: 40px; }
+        .hasil-box { background: #fff; padding: 25px; border: 1px solid #e1e8ed; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .hasil-box p { text-align: justify; margin-bottom: 15px; }
+        .highlight { background-color: #e8f8f5; padding: 10px; border-radius: 4px; font-weight: bold; font-family: monospace; font-size: 15px; border-left: 4px solid #1abc9c; margin-bottom: 15px; }
+        hr { border: 0; height: 1px; background: #ecf0f1; margin: 20px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Kalkulator Interpretasi Analisis Jalur Otomatis</h1>
+    <p>Masukkan identitas variabel dan angka hasil output statistik Anda. Teks interpretasi akan disesuaikan secara otomatis dengan nama variabel penelitian Anda.</p>
+
+    <!-- BAGIAN IDENTITAS VARIABEL -->
+    <div class="section-identity">
+        <h3>Identitas Variabel Penelitian</h3>
+        <div class="grid-2">
+            <div><label>Nama Variabel X1:</label><input type="text" id="nama_x1" placeholder="Contoh: Kualitas Produk"></div>
+            <div><label>Nama Variabel X2:</label><input type="text" id="nama_x2" placeholder="Contoh: Harga"></div>
+            <div><label>Nama Variabel Z (Intervening):</label><input type="text" id="nama_z" placeholder="Contoh: Kepuasan Pelanggan"></div>
+            <div><label>Nama Variabel Y (Dependen):</label><input type="text" id="nama_y" placeholder="Contoh: Loyalitas Konsumen"></div>
+        </div>
+    </div>
+
+    <!-- BAGIAN MODEL 1 -->
+    <div class="section-1">
+        <h3>A. TAHAP 1: Model Regresi ke Variabel Intervening (Z)</h3>
+        
+        <h4>1. Uji Asumsi Klasik Model 1</h4>
+        <div class="grid-3">
+            <div><label>Sig. Normalitas:</label><input type="number" id="sig_norm_1" step="0.001"></div>
+            <div><label>Tolerance Terkecil:</label><input type="number" id="tol_1" step="0.001"></div>
+            <div><label>VIF Terbesar:</label><input type="number" id="vif_1" step="0.001"></div>
+        </div>
+        <label>Sig. Heteroskedastisitas Terkecil:</label><input type="number" id="het_1" step="0.001">
+
+        <hr>
+
+        <h4>2. Koefisien Regresi Model 1</h4>
+        <label>Konstanta Model 1:</label><input type="number" id="c1" step="0.001">
+        <div class="grid-3">
+            <div><label>Koefisien (B) X1:</label><input type="number" id="b_x1_z" step="0.001"></div>
+            <div><label>Std. Error X1:</label><input type="number" id="se_x1_z" step="0.001"></div>
+            <div><label>Sig. t X1:</label><input type="number" id="sig_x1_z" step="0.001"></div>
+        </div>
+        <div class="grid-3">
+            <div><label>Koefisien (B) X2:</label><input type="number" id="b_x2_z" step="0.001"></div>
+            <div><label>Std. Error X2:</label><input type="number" id="se_x2_z" step="0.001"></div>
+            <div><label>Sig. t X2:</label><input type="number" id="sig_x2_z" step="0.001"></div>
+        </div>
+    </div>
+
+    <!-- BAGIAN MODEL 2 -->
+    <div class="section-2">
+        <h3>B. TAHAP 2: Model Regresi ke Variabel Dependen (Y)</h3>
+        
+        <h4>1. Uji Asumsi Klasik Model 2</h4>
+        <div class="grid-3">
+            <div><label>Sig. Normalitas:</label><input type="number" id="sig_norm_2" step="0.001"></div>
+            <div><label>Tolerance Terkecil:</label><input type="number" id="tol_2" step="0.001"></div>
+            <div><label>VIF Terbesar:</label><input type="number" id="vif_2" step="0.001"></div>
+        </div>
+        <label>Sig. Heteroskedastisitas Terkecil:</label><input type="number" id="het_2" step="0.001">
+
+        <hr>
+
+        <h4>2. Koefisien Regresi Model 2</h4>
+        <label>Konstanta Model 2:</label><input type="number" id="c2" step="0.001">
+        <div class="grid-2">
+            <div><label>Koefisien (B) X1:</label><input type="number" id="b_x1_y" step="0.001"></div>
+            <div><label>Sig. t X1:</label><input type="number" id="sig_x1_y" step="0.001"></div>
+        </div>
+        <div class="grid-2">
+            <div><label>Koefisien (B) X2:</label><input type="number" id="b_x2_y" step="0.001"></div>
+            <div><label>Sig. t X2:</label><input type="number" id="sig_x2_y" step="0.001"></div>
+        </div>
+        <div class="grid-3">
+            <div><label>Koefisien (B) Z:</label><input type="number" id="b_z_y" step="0.001"></div>
+            <div><label>Std. Error Z:</label><input type="number" id="se_z_y" step="0.001"></div>
+            <div><label>Sig. t Z:</label><input type="number" id="sig_z_y" step="0.001"></div>
+        </div>
+    </div>
+
+    <button onclick="buatInterpretasi()">Hasilkan Narasi Bab IV</button>
+
+    <div id="hasil-container">
+        <h2>Hasil Interpretasi Akademis (Siap Salin)</h2>
+        <div id="teks-hasil" class="hasil-box"></div>
+    </div>
+</div>
+
+<script>
+    function formatTanda(num) { return num < 0 ? "-" : "+"; }
+    function formatAngka(num) { return Math.abs(num); }
+    function arahHubungan(num) { return num > 0 ? "positif (searah)" : "negatif (berlawanan arah)"; }
+    function naikTurun(num) { return num > 0 ? "meningkat" : "menurun"; }
+
+    function buatInterpretasi() {
+        // Identitas Variabel
+        const nx1 = document.getElementById('nama_x1').value || "X1";
+        const nx2 = document.getElementById('nama_x2').value || "X2";
+        const nz = document.getElementById('nama_z').value || "Z";
+        const ny = document.getElementById('nama_y').value || "Y";
+
+        // Asumsi 1
+        const sNorm1 = parseFloat(document.getElementById('sig_norm_1').value);
+        const tol1 = parseFloat(document.getElementById('tol_1').value);
+        const vif1 = parseFloat(document.getElementById('vif_1').value);
+        const het1 = parseFloat(document.getElementById('het_1').value);
+        
+        // Model 1
+        const c1 = parseFloat(document.getElementById('c1').value);
+        const a1 = parseFloat(document.getElementById('b_x1_z').value);
+        const sa1 = parseFloat(document.getElementById('se_x1_z').value);
+        const sigX1Z = parseFloat(document.getElementById('sig_x1_z').value);
+        const a2 = parseFloat(document.getElementById('b_x2_z').value);
+        const sa2 = parseFloat(document.getElementById('se_x2_z').value);
+        const sigX2Z = parseFloat(document.getElementById('sig_x2_z').value);
+
+        // Asumsi 2
+        const sNorm2 = parseFloat(document.getElementById('sig_norm_2').value);
+        const tol2 = parseFloat(document.getElementById('tol_2').value);
+        const vif2 = parseFloat(document.getElementById('vif_2').value);
+        const het2 = parseFloat(document.getElementById('het_2').value);
+
+        // Model 2
+        const c2 = parseFloat(document.getElementById('c2').value);
+        const bX1Y = parseFloat(document.getElementById('b_x1_y').value);
+        const sigX1Y = parseFloat(document.getElementById('sig_x1_y').value);
+        const bX2Y = parseFloat(document.getElementById('b_x2_y').value);
+        const sigX2Y = parseFloat(document.getElementById('sig_x2_y').value);
+        const b = parseFloat(document.getElementById('b_z_y').value);
+        const sb = parseFloat(document.getElementById('se_z_y').value);
+        const sigZY = parseFloat(document.getElementById('sig_z_y').value);
+
+        if(isNaN(sa1) || isNaN(sa2) || isNaN(sb)) {
+            alert("Peringatan: Nilai Std. Error wajib diisi untuk menghitung Uji Sobel.");
+            return;
+        }
+
+        let html = "";
+
+        // ================= TAHAP 1 =================
+        html += `<h3>A. Hasil Pengujian Tahap 1 (Model Regresi ${nx1} dan ${nx2} terhadap ${nz})</h3>`;
+        
+        // Asumsi 1
+        html += `<h4>1. Uji Asumsi Klasik Model 1</h4>`;
+        html += `<ul>
+            <li><b>Uji Normalitas:</b> Nilai signifikansi yang diperoleh sebesar <b>${sNorm1}</b>. Karena nilai tersebut ${sNorm1 > 0.05 ? '> 0,05, maka residual pada Model 1 berdistribusi normal.' : '< 0,05, maka residual pada Model 1 TIDAK berdistribusi normal.'}</li>
+            <li><b>Uji Multikolinearitas:</b> Nilai <i>Tolerance</i> terkecil sebesar <b>${tol1}</b> dan VIF terbesar sebesar <b>${vif1}</b>. Karena memenuhi ambang batas (${tol1 > 0.10 && vif1 < 10 ? 'Tolerance > 0,10 dan VIF < 10' : 'ada indikator yang melewati batas'}), maka disimpulkan bahwa <b>${tol1 > 0.10 && vif1 < 10 ? 'tidak terjadi' : 'terjadi gejala'} multikolinearitas</b> antar variabel independen (${nx1} dan ${nx2}) di Model 1.</li>
+            <li><b>Uji Heteroskedastisitas:</b> Nilai signifikansi terkecil adalah <b>${het1}</b>. Karena ${het1 > 0.05 ? '> 0,05, maka <b>tidak terjadi</b> gejala heteroskedastisitas' : '< 0,05, maka <b>terjadi</b> gejala heteroskedastisitas'} pada Model 1.</li>
+        </ul>`;
+
+        // Regresi 1
+        html += `<h4>2. Persamaan dan Uji Hipotesis Model 1</h4>`;
+        html += `<p>Berdasarkan hasil pengolahan data, diperoleh persamaan struktural untuk Model 1 sebagai berikut:</p>`;
+        html += `<div class="highlight">Z = ${c1} ${formatTanda(a1)} ${formatAngka(a1)} X1 ${formatTanda(a2)} ${formatAngka(a2)} X2 + e₁</div>`;
+        html += `<p>Interpretasi matematis dan hasil uji parsial (Uji t) dari persamaan tersebut adalah:</p>`;
+        html += `<ul>
+            <li><b>Nilai Konstanta sebesar ${c1}:</b> Menunjukkan bahwa jika variabel ${nx1} (X1) dan ${nx2} (X2) diasumsikan konstan (nol), maka besarnya variabel ${nz} (Z) adalah sebesar ${c1}.</li>
+            <li><b>Pengaruh ${nx1} (X1) terhadap ${nz} (Z):</b> Koefisien regresi sebesar ${a1} dengan arah <b>${arahHubungan(a1)}</b>. Setiap kenaikan 1 satuan pada ${nx1} akan menyebabkan ${nz} <b>${naikTurun(a1)} sebesar ${formatAngka(a1)} satuan</b>. Hasil uji signifikansi menunjukkan nilai Sig. <b>${sigX1Z}</b>. Karena ${sigX1Z} ${sigX1Z < 0.05 ? '<' : '>'} 0,05, maka ${nx1} secara parsial <b>${sigX1Z < 0.05 ? 'berpengaruh signifikan' : 'tidak berpengaruh signifikan'}</b> terhadap ${nz}.</li>
+            <li><b>Pengaruh ${nx2} (X2) terhadap ${nz} (Z):</b> Koefisien regresi sebesar ${a2} dengan arah <b>${arahHubungan(a2)}</b>. Setiap kenaikan 1 satuan pada ${nx2} akan menyebabkan ${nz} <b>${naikTurun(a2)} sebesar ${formatAngka(a2)} satuan</b>. Hasil uji signifikansi menunjukkan nilai Sig. <b>${sigX2Z}</b>. Karena ${sigX2Z} ${sigX2Z < 0.05 ? '<' : '>'} 0,05, maka ${nx2} secara parsial <b>${sigX2Z < 0.05 ? 'berpengaruh signifikan' : 'tidak berpengaruh signifikan'}</b> terhadap ${nz}.</li>
+        </ul>`;
+
+        html += "<hr>";
+
+        // ================= TAHAP 2 =================
+        html += `<h3>B. Hasil Pengujian Tahap 2 (Model Regresi ${nx1}, ${nx2}, dan ${nz} terhadap ${ny})</h3>`;
+        
+        // Asumsi 2
+        html += `<h4>1. Uji Asumsi Klasik Model 2</h4>`;
+        html += `<ul>
+            <li><b>Uji Normalitas:</b> Nilai signifikansi yang diperoleh sebesar <b>${sNorm2}</b>. Karena nilai tersebut ${sNorm2 > 0.05 ? '> 0,05, maka residual pada Model 2 tetap berdistribusi normal.' : '< 0,05, maka residual pada Model 2 TIDAK berdistribusi normal.'}</li>
+            <li><b>Uji Multikolinearitas:</b> Nilai <i>Tolerance</i> terkecil sebesar <b>${tol2}</b> dan VIF terbesar sebesar <b>${vif2}</b>. Karena memenuhi syarat batas aman (${tol2 > 0.10 && vif2 < 10 ? 'Tolerance > 0,10 dan VIF < 10' : 'ada indikator yang melewati batas'}), maka disimpulkan bahwa <b>${tol2 > 0.10 && vif2 < 10 ? 'tidak terjadi' : 'terjadi gejala'} multikolinearitas</b> antara variabel prediktor di dalam Model 2.</li>
+            <li><b>Uji Heteroskedastisitas:</b> Nilai signifikansi terkecil adalah <b>${het2}</b>. Karena ${het2 > 0.05 ? '> 0,05, maka <b>tidak terjadi</b> gejala heteroskedastisitas' : '< 0,05, maka <b>terjadi</b> gejala heteroskedastisitas'} pada Model 2.</li>
+        </ul>`;
+
+        // Regresi 2
+        html += `<h4>2. Persamaan dan Uji Hipotesis Model 2</h4>`;
+        html += `<p>Analisis regresi tahap kedua mengukur pengaruh langsung variabel bebas (${nx1}, ${nx2}) dan variabel intervening (${nz}) terhadap variabel terikat (${ny}). Persamaan strukturalnya adalah:</p>`;
+        html += `<div class="highlight">Y = ${c2} ${formatTanda(bX1Y)} ${formatAngka(bX1Y)} X1 ${formatTanda(bX2Y)} ${formatAngka(bX2Y)} X2 ${formatTanda(b)} ${formatAngka(b)} Z + e₂</div>`;
+        html += `<p>Interpretasi matematis dan hasil pengujian pengaruh langsung (Uji t) dari persamaan di atas adalah:</p>`;
+        html += `<ul>
+            <li><b>Nilai Konstanta sebesar ${c2}:</b> Menunjukkan bahwa jika seluruh prediktor bernilai nol, maka diprediksi nilai ${ny} (Y) adalah sebesar ${c2}.</li>
+            <li><b>Pengaruh Langsung ${nx1} (X1) terhadap ${ny} (Y):</b> Koefisien regresi sebesar ${bX1Y}. Nilai signifikansi diperoleh sebesar <b>${sigX1Y}</b> ${sigX1Y < 0.05 ? '<' : '>'} 0,05. Artinya, ${nx1} <b>${sigX1Y < 0.05 ? 'berpengaruh signifikan' : 'tidak berpengaruh signifikan'}</b> terhadap ${ny} secara langsung.</li>
+            <li><b>Pengaruh Langsung ${nx2} (X2) terhadap ${ny} (Y):</b> Koefisien regresi sebesar ${bX2Y}. Nilai signifikansi diperoleh sebesar <b>${sigX2Y}</b> ${sigX2Y < 0.05 ? '<' : '>'} 0,05. Artinya, ${nx2} <b>${sigX2Y < 0.05 ? 'berpengaruh signifikan' : 'tidak berpengaruh signifikan'}</b> terhadap ${ny} secara langsung.</li>
+            <li><b>Pengaruh Langsung ${nz} (Z) terhadap ${ny} (Y):</b> Koefisien regresi sebesar ${b}. Nilai signifikansi diperoleh sebesar <b>${sigZY}</b> ${sigZY < 0.05 ? '<' : '>'} 0,05. Artinya, variabel intervening yaitu ${nz} <b>${sigZY < 0.05 ? 'berpengaruh signifikan' : 'tidak berpengaruh signifikan'}</b> terhadap ${ny} secara langsung.</li>
+        </ul>`;
+
+        html += "<hr>";
+
+        // ================= SOBEL =================
+        html += "<h3>C. Analisis Pengaruh Mediasi (Uji Sobel)</h3>";
+        html += `<p>Guna memastikan signifikansi peran variabel ${nz} sebagai mediator yang menjembatani hubungan antara variabel independen ke dependen, dilakukan Uji Sobel untuk mengukur besaran *Standard Error* tidak langsung.</p>`;
+
+        // Jalur 1 (X1 -> Z -> Y)
+        let mediasi1 = (a1 * b).toFixed(4);
+        let total1 = (bX1Y + (a1 * b)).toFixed(4);
+        let sobel1_bawah = Math.sqrt((b*b * sa1*sa1) + (a1*a1 * sb*sb));
+        let t_sobel1 = (a1 * b) / sobel1_bawah;
+        let ketSobel1 = Math.abs(t_sobel1) > 1.96 ? "berperan secara signifikan sebagai mediator (memediasi)" : "TIDAK mampu memediasi secara signifikan";
+
+        html += `<h4>1. Pengujian Mediasi: ${nx1} &rarr; ${nz} &rarr; ${ny}</h4>`;
+        html += `<ul>
+            <li>Pengaruh langsung ${nx1} &rarr; ${ny} = <b>${bX1Y}</b></li>
+            <li>Pengaruh tidak langsung (${nx1} &rarr; ${nz}) &times; (${nz} &rarr; ${ny}) = ${a1} &times; ${b} = <b>${mediasi1}</b></li>
+            <li>Total Pengaruh = <b>${total1}</b></li>
+        </ul>`;
+        html += `<p>Berdasarkan perhitungan Uji Sobel, diperoleh <b>nilai t hitung sebesar ${Math.abs(t_sobel1).toFixed(3)}</b>. Karena nilai t hitung ${Math.abs(t_sobel1).toFixed(3)} ${Math.abs(t_sobel1) > 1.96 ? '>' : '<'} t tabel (1,96), maka dapat disimpulkan bahwa variabel ${nz} <b>${ketSobel1}</b> pengaruh antara variabel ${nx1} terhadap variabel ${ny}.</p>`;
+
+        // Jalur 2 (X2 -> Z -> Y)
+        let mediasi2 = (a2 * b).toFixed(4);
+        let total2 = (bX2Y + (a2 * b)).toFixed(4);
+        let sobel2_bawah = Math.sqrt((b*b * sa2*sa2) + (a2*a2 * sb*sb));
+        let t_sobel2 = (a2 * b) / sobel2_bawah;
+        let ketSobel2 = Math.abs(t_sobel2) > 1.96 ? "berperan secara signifikan sebagai mediator (memediasi)" : "TIDAK mampu memediasi secara signifikan";
+
+        html += `<h4>2. Pengujian Mediasi: ${nx2} &rarr; ${nz} &rarr; ${ny}</h4>`;
+        html += `<ul>
+            <li>Pengaruh langsung ${nx2} &rarr; ${ny} = <b>${bX2Y}</b></li>
+            <li>Pengaruh tidak langsung (${nx2} &rarr; ${nz}) &times; (${nz} &rarr; ${ny}) = ${a2} &times; ${b} = <b>${mediasi2}</b></li>
+            <li>Total Pengaruh = <b>${total2}</b></li>
+        </ul>`;
+        html += `<p>Berdasarkan perhitungan Uji Sobel, diperoleh <b>nilai t hitung sebesar ${Math.abs(t_sobel2).toFixed(3)}</b>. Karena nilai t hitung ${Math.abs(t_sobel2).toFixed(3)} ${Math.abs(t_sobel2) > 1.96 ? '>' : '<'} t tabel (1,96), maka dapat disimpulkan bahwa variabel ${nz} <b>${ketSobel2}</b> pengaruh antara variabel ${nx2} terhadap variabel ${ny}.</p>`;
+
+        document.getElementById('teks-hasil').innerHTML = html;
+        document.getElementById('hasil-container').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
